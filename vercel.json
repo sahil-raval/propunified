@@ -1,0 +1,3 @@
+{
+  "buildCommand": "npm run typecheck:libs && npm --workspace=@workspace/api-server run build"
+}
