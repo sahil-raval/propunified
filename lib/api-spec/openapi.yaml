@@ -1,0 +1,968 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: PROP UNIFIED API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: properties
+    description: Property listing operations
+  - name: listings
+    description: Seller listing management
+  - name: kyc
+    description: KYC verification
+  - name: users
+    description: User profile management
+  - name: dashboard
+    description: CRM pipeline and stats
+  - name: inquiries
+    description: Property inquiries
+  - name: newsletters
+    description: Newsletter scheduling and management
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /properties:
+    get:
+      operationId: listProperties
+      tags: [properties]
+      summary: List all properties
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [sale, rent, commercial, plot, pg]
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: bedrooms
+          in: query
+          schema:
+            type: integer
+        - name: propertyCategory
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+    post:
+      operationId: createProperty
+      tags: [properties]
+      summary: Create a new property listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+
+  /properties/{id}:
+    get:
+      operationId: getProperty
+      tags: [properties]
+      summary: Get a single property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Property detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProperty
+      tags: [properties]
+      summary: Update a property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyUpdate"
+      responses:
+        "200":
+          description: Updated property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+    delete:
+      operationId: deleteProperty
+      tags: [properties]
+      summary: Delete a property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /properties/featured:
+    get:
+      operationId: getFeaturedProperties
+      tags: [properties]
+      summary: Get featured/premium properties for homepage
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Featured properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+
+  /listings:
+    get:
+      operationId: listListings
+      tags: [listings]
+      summary: Get all listings for the current user
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, pending_kyc, active, sold, rented, inactive]
+      responses:
+        "200":
+          description: List of listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+    post:
+      operationId: createListing
+      tags: [listings]
+      summary: Create a new listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingInput"
+      responses:
+        "201":
+          description: Created listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /listings/{id}:
+    get:
+      operationId: getListing
+      tags: [listings]
+      summary: Get a listing by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Listing detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+    patch:
+      operationId: updateListing
+      tags: [listings]
+      summary: Update a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+    delete:
+      operationId: deleteListing
+      tags: [listings]
+      summary: Delete a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /kyc:
+    get:
+      operationId: getKyc
+      tags: [kyc]
+      summary: Get KYC status for current user
+      responses:
+        "200":
+          description: KYC status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycRecord"
+        "404":
+          description: No KYC found
+    post:
+      operationId: submitKyc
+      tags: [kyc]
+      summary: Submit KYC information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KycInput"
+      responses:
+        "201":
+          description: KYC submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycRecord"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get overall stats for agent dashboard
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/pipeline:
+    get:
+      operationId: getPipeline
+      tags: [dashboard]
+      summary: Get sales pipeline data
+      responses:
+        "200":
+          description: Pipeline data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PipelineStage"
+
+  /newsletters:
+    get:
+      operationId: listNewsletters
+      tags: [newsletters]
+      summary: List all newsletters
+      responses:
+        "200":
+          description: List of newsletters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Newsletter"
+    post:
+      operationId: createNewsletter
+      tags: [newsletters]
+      summary: Create a newsletter (draft or scheduled)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterInput"
+      responses:
+        "201":
+          description: Created newsletter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+
+  /newsletters/{id}:
+    patch:
+      operationId: updateNewsletter
+      tags: [newsletters]
+      summary: Update a newsletter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterUpdate"
+      responses:
+        "200":
+          description: Updated newsletter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+    delete:
+      operationId: deleteNewsletter
+      tags: [newsletters]
+      summary: Delete a newsletter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /newsletters/{id}/send:
+    post:
+      operationId: sendNewsletter
+      tags: [newsletters]
+      summary: Send a newsletter immediately
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Newsletter sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Newsletter"
+
+  /inquiries:
+    get:
+      operationId: listInquiries
+      tags: [inquiries]
+      summary: List inquiries (for agents)
+      parameters:
+        - name: propertyId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, contacted, scheduled, closed]
+      responses:
+        "200":
+          description: List of inquiries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inquiry"
+    post:
+      operationId: createInquiry
+      tags: [inquiries]
+      summary: Submit a property inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InquiryInput"
+      responses:
+        "201":
+          description: Inquiry submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inquiry"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Property:
+      type: object
+      required: [id, title, type, price, city, area, status, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [sale, rent, commercial, plot, pg]
+        propertyCategory:
+          type: ["string", "null"]
+        price:
+          type: number
+        priceUnit:
+          type: string
+        city:
+          type: string
+        locality:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        area:
+          type: number
+        areaUnit:
+          type: string
+        bedrooms:
+          type: ["integer", "null"]
+        bathrooms:
+          type: ["integer", "null"]
+        furnishing:
+          type: ["string", "null"]
+        amenities:
+          type: ["string", "null"]
+        photos:
+          type: ["string", "null"]
+        featured:
+          type: boolean
+        isPremium:
+          type: boolean
+        premiumUntil:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, sold, rented, inactive]
+        ownerId:
+          type: ["string", "null"]
+        ownerName:
+          type: ["string", "null"]
+        ownerPhone:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    PropertyInput:
+      type: object
+      required: [title, type, price, city, area]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [sale, rent, commercial, plot, pg]
+        propertyCategory:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        city:
+          type: string
+        locality:
+          type: string
+        address:
+          type: string
+        area:
+          type: number
+        areaUnit:
+          type: string
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        furnishing:
+          type: string
+        amenities:
+          type: string
+        photos:
+          type: string
+        featured:
+          type: boolean
+        ownerId:
+          type: string
+        ownerName:
+          type: string
+        ownerPhone:
+          type: string
+
+    PropertyUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [sale, rent, commercial, plot, pg]
+        propertyCategory:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        city:
+          type: string
+        locality:
+          type: string
+        address:
+          type: string
+        area:
+          type: number
+        areaUnit:
+          type: string
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        furnishing:
+          type: string
+        amenities:
+          type: string
+        photos:
+          type: string
+        featured:
+          type: boolean
+        status:
+          type: string
+          enum: [active, sold, rented, inactive]
+
+    Listing:
+      type: object
+      required: [id, propertyId, sellerId, status, listingType, createdAt]
+      properties:
+        id:
+          type: integer
+        propertyId:
+          type: integer
+        sellerId:
+          type: string
+        sellerName:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, pending_kyc, active, sold, rented, inactive]
+        listingType:
+          type: string
+          enum: [sale, rent, commercial, plot, pg]
+        askingPrice:
+          type: ["number", "null"]
+        description:
+          type: ["string", "null"]
+        documents:
+          type: ["string", "null"]
+        kycVerified:
+          type: boolean
+        isPremium:
+          type: boolean
+        premiumUntil:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+        property:
+          $ref: "#/components/schemas/Property"
+
+    ListingInput:
+      type: object
+      required: [propertyId, listingType]
+      properties:
+        propertyId:
+          type: integer
+        listingType:
+          type: string
+          enum: [sale, rent, commercial, plot, pg]
+        askingPrice:
+          type: number
+        description:
+          type: string
+        documents:
+          type: string
+        isPremium:
+          type: boolean
+
+    ListingUpdate:
+      type: object
+      properties:
+        listingType:
+          type: string
+          enum: [sale, rent, commercial, plot, pg]
+        askingPrice:
+          type: number
+        description:
+          type: string
+        documents:
+          type: string
+        status:
+          type: string
+          enum: [draft, pending_kyc, active, sold, rented, inactive]
+        kycVerified:
+          type: boolean
+        isPremium:
+          type: boolean
+
+    KycRecord:
+      type: object
+      required: [id, userId, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        fullName:
+          type: ["string", "null"]
+        panNumber:
+          type: ["string", "null"]
+        aadhaarNumber:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        pincode:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, under_review, approved, rejected]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    KycInput:
+      type: object
+      required: [fullName, panNumber, aadhaarNumber, phone]
+      properties:
+        fullName:
+          type: string
+        panNumber:
+          type: string
+        aadhaarNumber:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        pincode:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+
+    User:
+      type: object
+      required: [id, clerkId, createdAt]
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        email:
+          type: ["string", "null"]
+        fullName:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [buyer, seller, agent, admin]
+        avatarUrl:
+          type: ["string", "null"]
+        kycStatus:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [buyer, seller, agent, admin]
+        avatarUrl:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalProperties, activeListings, totalInquiries, totalUsers, propertiesByType, listingsByStatus]
+      properties:
+        totalProperties:
+          type: integer
+        activeListings:
+          type: integer
+        totalInquiries:
+          type: integer
+        totalUsers:
+          type: integer
+        propertiesByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+        listingsByStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+        recentProperties:
+          type: array
+          items:
+            $ref: "#/components/schemas/Property"
+
+    PipelineStage:
+      type: object
+      required: [stage, count, value]
+      properties:
+        stage:
+          type: string
+        count:
+          type: integer
+        value:
+          type: number
+        color:
+          type: string
+
+    CountByLabel:
+      type: object
+      required: [label, count]
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+
+    Inquiry:
+      type: object
+      required: [id, propertyId, name, phone, status, createdAt]
+      properties:
+        id:
+          type: integer
+        propertyId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        message:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [new, contacted, scheduled, closed]
+        createdAt:
+          type: string
+        property:
+          $ref: "#/components/schemas/Property"
+
+    InquiryInput:
+      type: object
+      required: [propertyId, name, phone]
+      properties:
+        propertyId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        message:
+          type: string
+
+    Newsletter:
+      type: object
+      required: [id, subject, body, status, createdAt]
+      properties:
+        id:
+          type: integer
+        subject:
+          type: string
+        body:
+          type: string
+        scheduledAt:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, scheduled, sent]
+        sentAt:
+          type: ["string", "null"]
+        recipientCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    NewsletterInput:
+      type: object
+      required: [subject, body]
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+        scheduledAt:
+          type: string
+
+    NewsletterUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+        scheduledAt:
+          type: string
+        status:
+          type: string
+          enum: [draft, scheduled, sent]

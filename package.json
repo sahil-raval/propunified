@@ -1,0 +1,23 @@
+{
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run typecheck && npm --workspaces --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "npm run typecheck:libs && npm --workspaces --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "private": true,
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "typescript": "~5.9.3"
+  },
+  "workspaces": [
+    "artifacts/*",
+    "lib/*",
+    "scripts"
+  ],
+  "optionalDependencies": {
+    "@esbuild/darwin-arm64": "^0.28.0"
+  }
+}
