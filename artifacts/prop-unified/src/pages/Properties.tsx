@@ -107,12 +107,16 @@ export default function Properties() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
 
-  const { data: properties, isLoading } = useListProperties({
+  // ✅ FIXED: renamed raw data to propertiesData, then normalise to always be an array
+  const { data: propertiesData, isLoading } = useListProperties({
     type: activeType === "All" ? undefined : activeType,
     city: city || undefined,
     search: search || undefined,
     limit: 24,
   });
+  const properties: Property[] = Array.isArray(propertiesData)
+    ? propertiesData
+    : (propertiesData as any)?.data ?? [];
 
   function handleSearch() {
     setSearch(searchInput);
@@ -237,7 +241,7 @@ export default function Properties() {
                     </div>
                   ))}
                 </div>
-              ) : properties && properties.length > 0 ? (
+              ) : properties.length > 0 ? (
                 <>
                   <p className="text-sm text-muted-foreground mb-4">
                     {properties.length} properties found
