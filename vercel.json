@@ -1,3 +1,13 @@
 {
-  "buildCommand": "npm --prefix /vercel/path0 run typecheck:libs && npm --prefix /vercel/path0 --workspace=@workspace/api-server run build"
+  "version": 2,
+  "buildCommand": "npm --prefix /vercel/path0 run typecheck:libs && npm --prefix /vercel/path0 --workspace=@workspace/api-server run build",
+  "outputDirectory": "artifacts/api-server/dist",
+  "functions": {
+    "artifacts/api-server/dist/index.mjs": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    { "src": "/(.*)", "dest": "artifacts/api-server/dist/index.mjs" }
+  ]
 }
