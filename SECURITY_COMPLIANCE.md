@@ -1,9 +1,10 @@
 # PROP UNIFIED — Security, Governance, Risk & Compliance (SGRC) Master Reference
 
-**Scope:** Indian real estate marketplace, Gujarat/Ahmedabad focus  
-**Stack:** Next.js / React Native · Vercel · Render · Supabase (Postgres) · Cloudflare · Razorpay  
-**Prepared:** June 2026  
-**Classification:** Internal — Security & Compliance Team
+**Scope:** Prop Unified (Indian real estate marketplace, Gujarat focus)  
+**Classification:** Internal — Security & Compliance Team  
+**Date:** 09 June 2026  
+**Author:** Shreyas Vivek  
+**Version:** 1.0  
 
 ---
 
@@ -1756,5 +1757,6 @@ For mandatory security audits use only CERT-In empanelled Information Security A
 *This document is a technical and operational reference guide. It is not legal advice. All regulatory interpretations, applicability thresholds, and compliance positions should be validated with qualified Indian legal counsel specialising in data protection, real estate law, and financial regulation before implementation or launch. Regulatory landscape is current as of June 2026; monitor for updates, especially DPDP Board guidance, GujRERA circulars, and RBI notifications.*
 
 *Maintained by: Security & Compliance Team*  
+*Date: 09 June 2026*
 *Review cycle: Quarterly*  
 *Next review: September 2026*
